@@ -1,0 +1,63 @@
+(defmacro dotproduct-macro (a b)
+  "Expand the dot product of a and b as a macro."
+  (assert (= (length a) (length b)))
+  (labels ((dotproduct-helper (a b)
+	     (if (null a)
+		 nil
+		 (cons (list '* (car a) (car b))
+		       (dotproduct-helper (cdr a) (cdr b))))))
+    (cons '+ (dotproduct-helper a b))))
+
+(defun hermite-cubic (a b ya yb sa sb)
+  "Return the cubic Hermite polynomial for f(i)=yi, f'(i)=si,
+i=a,b.  Coefficients are returned in increasing order."
+  (let* (;; coefficients of the normalized t=(x-a)/(b-a)
+	 (c0 ya)
+	 (c1 sa)
+	 (c2 (dotproduct-macro (-3d0 -2d0 3d0 -1d0) (ya sa yb sb)))
+	 (c3 (dotproduct-macro (2d0 1d0 -2d0 1d0) (ya sa yb sb)))
+	 ;; powers of d=1/(b-a), n=-a
+	 (d1 (/ (- b a)))
+	 (n1 (- a))
+	 (d2 (* d1 d1))
+	 (n2 (* n1 n1))
+	 (d3 (* d1 d2))
+	 (n3 (* n1 n2))
+	 (cd1 (* c1 d1))
+	 (cd2 (* c2 d2))
+	 (cd3 (* c3 d3)))
+    (values (+ c0 (* cd1 n1) (* cd2 n2) (* cd3 n3))
+	    (+ cd1 (* 2d0 cd2 n1) (* 3d0 cd3 n2))
+	    (+ cd2 (* 3d0 cd3 n1))
+	    cd3)))
+
+(defun test-hermite (a b ya yb sa sb)
+  (multiple-value-bind (c0 c1 c2 c3) (hermite-cubic a b ya yb sa sb)
+    (flet ((poly-value (x)
+	     (+ c0 (* c1 x) (* c2 x x) (* c3 x x x)))
+	   (poly-deriv (x)
+	     (+ c1 (* 2d0 c2 x) (* 3d0 c3 x x))))
+	(values (- (poly-value a) ya)
+		(- (poly-value b) yb)
+		(- (poly-deriv a) sa)
+		(- (poly-deriv b) sb)))))
+
+(test-hermite (random 10d0) (random 10d0)
+	      (random 10d0) (random 10d0)
+	      (random 10d0) (random 10d0))
+
+(defun add-outer-product! (A v c)
+;;; !!! establish the value of n, this version is taken out of context
+	     "Add (v v^T)*c to the matrix A.  The dimension of A
+is (n n), v is a vector of length n, and c is a scalar.  This being an
+internal function, nothing is checked.  Return A."
+	     (dotimes (row n)
+	       (dotimes (j i)
+		 (let* ((col (+ row j))
+			(vvc (* (aref v row) (aref v col) c)))
+		   (if (zerop j)
+		       (incf (aref A row col) vvc)
+		       (progn
+			 (incf (aref A row col) vvc)
+			 (incf (aref A col row) vvc))))))
+	     A)

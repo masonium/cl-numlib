@@ -1,0 +1,2 @@
+;; newton-minimize
+(newton-minimize #'(lambda (x) (values (cos x) (- (sin x)))) -1 -10 -1)

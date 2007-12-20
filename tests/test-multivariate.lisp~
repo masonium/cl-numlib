@@ -1,0 +1,28 @@
+(in-package :cl-numlib)
+
+(defun quadratic-0 (x &optional derivative-p)
+  "Quadratic around 0."
+  (let ((x1 (aref x 0))
+	(x2 (aref x 1))
+	(fx (- (l2-norm x))))
+  (format t "x=(~a,~a)~%" x1 x2)
+  (if derivative-p
+      (values fx (vector (* -2d0 x1) (* -2d0 x2)))
+      fx)))
+
+(defun banana-function (a &optional derivative-p)
+  (declare (ignore derivative-p))
+  "\"Banana\" function f(x,y) = 100(y-x^2)^2-(1-x)^2."
+  (let ((x (aref a 0))
+	(y (aref a 1)))
+    (format t "x=(~a,~a)~%" x y)
+    (values (- (* -100 (square (- y (square x))))
+	       (square (- 1 x)))
+	    (vector (+ (* 2 (- 1 x))
+		       (* 400 (- y (square x)) x))
+		    (* -200 (- y (square x)))))))
+  
+(quasi-newton-maximize #'banana-function #(1 0))
+(quasi-newton-maximize #'banana-function #(1 1)
+		       :perturb-initial-critical-point t)
+(quasi-newton-maximize #'quadratic-0 #(1 9))
