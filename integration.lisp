@@ -66,11 +66,43 @@ the derivative."
 		  (maxstep 15))
   (declare (ignore method))
   (cond
-    ((and (eq a :minusinfinity) (eq b :plusinfinity))
+    ((and (eq a :minusinfinity) (eq b :infinity))
      (trapezoidal-closed (map-inf-inf f) eps :minstep minstep :maxstep maxstep))
     ((eq a :minusinfinity)
      (trapezoidal-closed (map-inf-b f b) eps :minstep minstep :maxstep maxstep))
-    ((eq b :plusinfinity)
+    ((eq b :infinity)
      (trapezoidal-closed (map-a-inf f a) eps :minstep minstep :maxstep maxstep))
     (t
      (trapezoidal-closed (map-a-b f a b) eps :minstep minstep :maxstep maxstep))))
+
+(defun simpsons-rule-on-index (f n)
+  "Simpson's rule integrator using indexes.
+
+  When f is called on an integer i : 0 <= i < n, it returns 
+  (values x y) where y=f(x).
+
+  The function returns the value of the integral of f(x), calling f
+  once on each i.  x is supposed to be monotone increasing in x (this
+  is checked).
+
+  This function is useful when you want to integrate a univariate
+  function that is only known on a (possibly irregular) grid, with the
+  grid and the values saved in vectors."
+  (bind ((sum 0d0)
+	 ((:values x-prev y-prev) (funcall f 0)))
+    ;; note: previous values are saved explicitly
+    (iter
+      (for i :from 1 :below n)
+      (bind (((:values x y) (funcall f i)))
+	(unless (<= x-prev x)
+	  (error "x[~a]=~a > x[~a]=~a" (1- i) x-prev i x))
+	(incf sum (* (+ y y-prev) (- x x-prev) 0.5d0))
+	(setf x-prev x
+	      y-prev y)))
+    sum))
+;; (let* ((n 10)
+;;        (x (num-sequence :from 0 :to 5 :length n))
+;;        (y (array-map #'square x)))
+;;   (flet ((f (i)
+;; 	   (values (aref x i) (aref y i))))
+;;     (simpsons-rule-on-index #'f n)))

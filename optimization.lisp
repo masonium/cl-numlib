@@ -18,7 +18,10 @@ then necessary.  The algorithm will also find the local minimum at the
 endpoints, and if f is unimodal, it will find the global minimum.
 nmax is there for terminating the algorithm, in case tolerance is zero
 or too small.  All values should be double-float, and f should also
-return double-floats."
+return double-floats.
+
+Note: when f is constant on a range, golden-section-minimize ``pulls
+to the left'', ie will keep picking smaller values."
   (declare (double-float a b tol)
 	   (fixnum nmax)
 	   (type (function (double-float) double-float) f)
@@ -46,7 +49,7 @@ return double-floats."
 ;;       (incf n)
 ;;       (format t "bracket is a=~a~%m1=f(~a)=~a~%m2=f(~a)=~a~%b=~a~%"
 ;;  	      a m1 f1 m2 f2 b)
-      (if (< f1 f2)			; change < to maximize
+      (if (<= f1 f2)			; change < to maximize
 	  (progn 
 	    ;; new bracket is (a,m1,m2)
 	    (shiftf b m2 m1 (golden-section-combination m1 a))
