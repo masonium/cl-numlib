@@ -184,7 +184,7 @@ rootfinding functions and find-satisfactory-fx."
        (values x fx))
       ;; no root, trying to find a negative value for bracketing
       ((plusp fx)
-       (bind (((values y fy) (find-satisfactory-fx x f positive-rule
+       (bind (((:values y fy) (find-satisfactory-fx x f positive-rule
 			      :satisfactory-p #'minusp
 			      :maximum-iterations maximum-iterations)))
 	 (if (<= (abs fy) epsilon)
@@ -194,7 +194,7 @@ rootfinding functions and find-satisfactory-fx."
 				    tolerance ;)
 		      :epsilon epsilon))))
       ((minusp fx)
-       (bind (((values y fy) (find-satisfactory-fx x f negative-rule
+       (bind (((:values y fy) (find-satisfactory-fx x f negative-rule
 			      :satisfactory-p #'plusp
 			      :maximum-iterations maximum-iterations)))
 	 (if (<= (abs fy) epsilon)

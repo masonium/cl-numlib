@@ -178,7 +178,7 @@ with linesearch."
 	       (funcall f (array+ x0 (array-scalar* direction alpha)) nil)))
 	(bind ((alpha (golden-section-minimize #'g 0d0 alpha (* alpha 1d-5)))
 	       (x (array+ x0 (array-scalar* direction alpha)))
-	       ((values fx fdx) (funcall f x t)))
+	       ((:values fx fdx) (funcall f x t)))
 	  (values alpha x fx fdx))))))
 	  
     
@@ -245,7 +245,7 @@ Springer, 2006.  Chapter 6.  Heuristic for initializing H is from p.
   (bind ((n (length x0))
 	 (H (identity-matrix n H-scaling))
 	 (x x0)
-	 ((values fx fdx) (funcall f x t)))
+	 ((:values fx fdx) (funcall f x t)))
     ;; we may not believe that the critical point is an optimum
     (when (< (l2-norm fdx) (* delta (1+ fx)))
       (return-from bfgs-minimize (values x fx 0)))
@@ -254,7 +254,7 @@ Springer, 2006.  Chapter 6.  Heuristic for initializing H is from p.
       (let ((direction (array-negate (matrix-vector-multiply H fdx))))
 	(when (plusp (dot-product direction fdx))
 	  (error 'bfgs-H-not-positive-definite-error :H H))
-	(bind (((values alpha x-next fx-next fdx-next)
+	(bind (((:values alpha x-next fx-next fdx-next)
 		(linesearch-robust f x direction :a1 linesearch-a1 :a2 linesearch-a2
 		 :m linesearch-m :m1 linesearch-m1 :maxiter linesearch-maxiter 
 		 :f0 fx :fd0 fdx))
